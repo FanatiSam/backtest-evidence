@@ -8,14 +8,16 @@ capital in drawdown calculations, and gives reviewers reproducible inputs.
 
 Python 3.10+ · no runtime dependencies · no network calls · MIT licensed
 
-> **Early release, v0.1.0.** Developed from lessons in a private quantitative-research
+> **Early project; v0.1.1 review candidate.** Developed from lessons in a private quantitative-research
 > workflow. This is a new standalone implementation, not a public copy of that
 > system. All included data is synthetic. External adoption and independent review
 > have not yet been established. An `ok` result means only the documented checks
 > passed; it is not evidence of profitability or a clean research history.
 
 [繁體中文說明](README.zh-TW.md) · [Methodology](docs/METHODOLOGY.md) ·
-[Contributing](CONTRIBUTING.md) · [Maintainer plan](docs/MAINTAINER_PLAN.md)
+[Contributing](CONTRIBUTING.md) · [Maintainer plan](docs/MAINTAINER_PLAN.md) ·
+[Ten-minute trial](docs/TRY_IT.md) · [Executable case studies](docs/CASE_STUDIES.md) ·
+[Internal trial report](docs/TRIAL_REPORT.md)
 
 ## Try it in one minute
 
@@ -26,6 +28,9 @@ python3 -m backtest_evidence report examples/daily_pnl.csv \
   --capital 1000 --sessions examples/sessions.csv
 python3 -m unittest discover -s tests -v
 ```
+
+For the 0.1.1 review candidate, check out `trial-and-case-studies` first. The main
+branch remains the last published version until maintainer review is complete.
 
 No installation or API key is needed to run from the repository. Optionally install
 with `python3 -m pip install .` to use the `backtest-evidence` command elsewhere.
@@ -71,6 +76,17 @@ This intentionally returns exit code **2**, `status: incomplete`, and
 `metrics: null`. Blank, `NA` and `N/A` cells are unknown. NaN and infinity are
 invalid, not missing. Omitted dates can only be detected when you provide an
 authoritative expected-session calendar. The tool does not guess exchange holidays.
+
+For a wide table or different header names, select exactly one series explicitly:
+
+```bash
+python3 -m backtest_evidence report examples/wide_pnl.csv --capital 1000 \
+  --date-column session --pnl-column example_a --sessions examples/sessions.csv
+```
+
+No columns are summed automatically and no rows are dropped. Choosing `example_b`
+returns `incomplete` because it contains a blank cell. The optional session calendar
+still uses a `date` header. Missing or identical selected headers are input errors.
 
 ## Check declared causality
 
