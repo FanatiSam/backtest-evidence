@@ -16,3 +16,5 @@ jobs:
       - run: python -m unittest discover -s tests -v
       - run: python -m backtest_evidence report examples/daily_pnl.csv --capital 1000 --sessions examples/sessions.csv
       - run: python -m backtest_evidence events examples/events.csv
+      - run: python -m examples.case_studies
+      - run: python -m backtest_evidence report examples/wide_pnl.csv --capital 1000 --date-column session --pnl-column example_a --sessions examples/sessions.csv

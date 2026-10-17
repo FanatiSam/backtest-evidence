@@ -140,6 +140,28 @@ class ManifestTests(unittest.TestCase):
 
 
 class CLITests(unittest.TestCase):
+    def test_explicit_column_mapping_preserves_missingness(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "wide.csv"
+            path.write_text("session,alpha,beta\n2024-01-02,-50,10\n2024-01-03,100,\n")
+            for column, code, status in (("alpha", 0, "ok"), ("beta", 2, "incomplete")):
+                out = io.StringIO()
+                with contextlib.redirect_stdout(out):
+                    actual = main(["report", str(path), "--capital", "1000", "--date-column", "session", "--pnl-column", column])
+                result = json.loads(out.getvalue())
+                self.assertEqual(actual, code)
+                self.assertEqual(result["status"], status)
+                if column == "alpha":
+                    self.assertEqual(result["metrics"]["total_pnl"], 50)
+                else:
+                    self.assertIsNone(result["metrics"])
+
+    def test_wrong_or_ambiguous_column_fails(self):
+        for options in (["--pnl-column", "not_present"], ["--pnl-column", "date"]):
+            with contextlib.redirect_stderr(io.StringIO()):
+                actual = main(["report", "examples/daily_pnl.csv", "--capital", "1000"] + options)
+            self.assertEqual(actual, 1)
+
     def test_demo_and_negative_exit_codes(self):
         for file, code, status in (("daily_pnl.csv", 0, "ok"), ("missing_pnl.csv", 2, "incomplete")):
             out = io.StringIO()
@@ -156,6 +178,16 @@ class CLITests(unittest.TestCase):
                 code = main(["report", str(path), "--capital", "100"])
             self.assertEqual(code, 1)
             self.assertEqual(json.loads(err.getvalue())["status"], "error")
+
+
+class CaseStudyTests(unittest.TestCase):
+    def test_documented_counterexamples(self):
+        from examples.case_studies import reproduce
+        result = reproduce()
+        self.assertEqual(result["initial_loss"]["naive_max_drawdown"], 0)
+        self.assertEqual(result["initial_loss"]["correct_max_drawdown"], 50)
+        self.assertEqual(result["missing_observation"]["zero_filled_total_pnl"], 30)
+        self.assertIsNone(result["missing_observation"]["preserved_missing_metrics"])
 
 
 if __name__ == "__main__":

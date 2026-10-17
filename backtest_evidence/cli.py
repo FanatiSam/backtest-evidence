@@ -30,6 +30,8 @@ def main(argv: list[str] | None = None) -> int:
     report.add_argument("--capital", type=float, required=True)
     report.add_argument("--sessions", help="CSV with one expected session per date row")
     report.add_argument("--periods-per-year", type=int, default=252)
+    report.add_argument("--date-column", default="date", help="Observation date column in the PnL CSV")
+    report.add_argument("--pnl-column", default="pnl", help="Exactly one net daily PnL column; no automatic aggregation")
     events = commands.add_parser("events", help="Audit declared timestamp causality")
     events.add_argument("events_csv")
     boundary = commands.add_parser("research-window", help="Audit observation dates against an OOS boundary")
@@ -44,7 +46,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.command == "report":
-            rows = read_csv(args.pnl_csv, {"date", "pnl"})
+            if args.date_column == args.pnl_column:
+                raise ValueError("date and PnL columns must be different")
+            source_rows = read_csv(args.pnl_csv, {args.date_column, args.pnl_column})
+            rows = [{"date": row[args.date_column], "pnl": row[args.pnl_column]} for row in source_rows]
             sessions = [r["date"] for r in read_csv(args.sessions, {"date"})] if args.sessions else None
             result = pnl_report(rows, args.capital, sessions, args.periods_per_year)
         elif args.command == "events":

@@ -9,6 +9,13 @@ as an independent standard-library package. There are no claimed external users,
 downloads, commercial adopters, or independent audits. The first release focuses
 on five bounded checks and synthetic examples rather than exposing a private system.
 
+The 0.1.1 review candidate has undergone a maintainer-led compatibility trial on
+two historical exports and five series. Four series correctly preserved calendar-
+alignment blanks; one complete series matched a separate Decimal arithmetic check.
+The trial led to explicit CSV-column selection, synthetic counterexamples and a
+short trial guide. See [TRIAL_REPORT.md](TRIAL_REPORT.md). This is internal usage,
+not a claim of external adoption. The review branch has not yet been merged.
+
 ## How Codex supports maintenance
 
 Codex assisted the initial implementation, documentation and regression tests, with
